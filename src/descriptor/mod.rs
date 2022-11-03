@@ -37,7 +37,9 @@ pub mod checksum;
 pub mod dsl;
 pub mod error;
 pub mod policy;
+mod spk_iter;
 pub mod template;
+pub use spk_iter::SpkIter;
 
 pub use self::checksum::get_checksum;
 pub use self::error::Error as DescriptorError;
@@ -352,7 +354,7 @@ where
 pub(crate) trait DescriptorMeta {
     fn is_witness(&self) -> bool;
     fn is_taproot(&self) -> bool;
-    fn get_extended_keys(&self) -> Result<Vec<DescriptorXKey<ExtendedPubKey>>, DescriptorError>;
+    fn get_extended_keys(&self) -> Vec<DescriptorXKey<ExtendedPubKey>>;
     fn derive_from_hd_keypaths<'s>(
         &self,
         hd_keypaths: &HdKeyPaths,
@@ -393,7 +395,7 @@ impl DescriptorMeta for ExtendedDescriptor {
         self.desc_type() == DescriptorType::Tr
     }
 
-    fn get_extended_keys(&self) -> Result<Vec<DescriptorXKey<ExtendedPubKey>>, DescriptorError> {
+    fn get_extended_keys(&self) -> Vec<DescriptorXKey<ExtendedPubKey>> {
         let mut answer = Vec::new();
 
         self.for_each_key(|pk| {
@@ -404,7 +406,7 @@ impl DescriptorMeta for ExtendedDescriptor {
             true
         });
 
-        Ok(answer)
+        answer
     }
 
     fn derive_from_psbt_key_origins<'s>(
