@@ -1850,6 +1850,7 @@ pub fn get_funded_wallet(
 
 #[cfg(test)]
 pub(crate) mod test {
+    use assert_matches::assert_matches;
     use bitcoin::{util::psbt, Network, PackedLockTime, Sequence};
 
     use crate::database::Database;
@@ -4424,11 +4425,9 @@ pub(crate) mod test {
             result.is_err(),
             "Signing should have failed because the TX uses non-standard sighashes"
         );
-        assert!(
-            matches!(
-                result.unwrap_err(),
-                Error::Signer(SignerError::NonStandardSighash)
-            ),
+        assert_matches!(
+            result,
+            Err(Error::Signer(SignerError::NonStandardSighash)),
             "Signing failed with the wrong error type"
         );
 
@@ -4911,16 +4910,10 @@ pub(crate) mod test {
                 ..Default::default()
             },
         );
-        assert!(
-            result.is_err(),
-            "Signing should have failed because the witness_utxo is missing"
-        );
-        assert!(
-            matches!(
-                result.unwrap_err(),
-                Error::Signer(SignerError::MissingWitnessUtxo)
-            ),
-            "Signing failed with the wrong error type"
+        assert_matches!(
+            result,
+            Err(Error::Signer(SignerError::MissingWitnessUtxo)),
+            "Signing should have failed with the correct error because the witness_utxo is missing"
         );
 
         // restore the witness_utxo
@@ -4934,9 +4927,9 @@ pub(crate) mod test {
             },
         );
 
-        assert!(result.is_ok(), "Signing should have worked");
-        assert!(
-            result.unwrap(),
+        assert_matches!(
+            result,
+            Ok(true),
             "Should finalize the input since we can produce signatures"
         );
     }
@@ -5261,11 +5254,9 @@ pub(crate) mod test {
             result.is_err(),
             "Signing should have failed because the TX uses non-standard sighashes"
         );
-        assert!(
-            matches!(
-                result.unwrap_err(),
-                Error::Signer(SignerError::NonStandardSighash)
-            ),
+        assert_matches!(
+            result,
+            Err(Error::Signer(SignerError::NonStandardSighash)),
             "Signing failed with the wrong error type"
         );
 
@@ -5281,11 +5272,9 @@ pub(crate) mod test {
             result.is_err(),
             "Signing should have failed because the witness_utxo is missing"
         );
-        assert!(
-            matches!(
-                result.unwrap_err(),
-                Error::Signer(SignerError::MissingWitnessUtxo)
-            ),
+        assert_matches!(
+            result,
+            Err(Error::Signer(SignerError::MissingWitnessUtxo)),
             "Signing failed with the wrong error type"
         );
 
@@ -5366,26 +5355,26 @@ pub(crate) mod test {
         builder
             .add_recipient(addr.script_pubkey(), balance.immature / 2)
             .current_height(confirmation_time);
-        assert!(matches!(
-            builder.finish().unwrap_err(),
-            Error::InsufficientFunds {
+        assert_matches!(
+            builder.finish(),
+            Err(Error::InsufficientFunds {
                 needed: _,
                 available: 0
-            }
-        ));
+            })
+        );
 
         // Still unspendable...
         let mut builder = wallet.build_tx();
         builder
             .add_recipient(addr.script_pubkey(), balance.immature / 2)
             .current_height(not_yet_mature_time);
-        assert!(matches!(
-            builder.finish().unwrap_err(),
-            Error::InsufficientFunds {
+        assert_matches!(
+            builder.finish(),
+            Err(Error::InsufficientFunds {
                 needed: _,
                 available: 0
-            }
-        ));
+            })
+        );
 
         // ...Now the coinbase is mature :)
         let sync_time = SyncTime {
@@ -5427,10 +5416,7 @@ pub(crate) mod test {
 
         builder.add_recipient(addr.script_pubkey(), 0);
 
-        assert!(matches!(
-            builder.finish().unwrap_err(),
-            Error::OutputBelowDustLimit(0)
-        ));
+        assert_matches!(builder.finish(), Err(Error::OutputBelowDustLimit(0)));
 
         let mut builder = wallet.build_tx();
 
