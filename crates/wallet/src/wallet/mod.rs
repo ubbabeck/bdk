@@ -1213,7 +1213,6 @@ impl Wallet {
     /// # use bdk_wallet::wallet::ChangeSet;
     /// # use bdk_wallet::wallet::error::CreateTxError;
     /// # use anyhow::Error;
-    /// # use rand::thread_rng;
     /// # let descriptor = "wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)";
     /// # let mut wallet = doctest_wallet!();
     /// # let to_address = Address::from_str("2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt").unwrap().assume_checked();
@@ -1221,7 +1220,7 @@ impl Wallet {
     ///    let mut builder =  wallet.build_tx();
     ///    builder
     ///        .add_recipient(to_address.script_pubkey(), Amount::from_sat(50_000));
-    ///    builder.finish_with_aux_rand(&mut thread_rng())?
+    ///    builder.finish()?
     /// };
     ///
     /// // sign and broadcast ...
@@ -1578,7 +1577,6 @@ impl Wallet {
     /// # use bdk_wallet::wallet::ChangeSet;
     /// # use bdk_wallet::wallet::error::CreateTxError;
     /// # use anyhow::Error;
-    /// # use rand::thread_rng;
     /// # let descriptor = "wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)";
     /// # let mut wallet = doctest_wallet!();
     /// # let to_address = Address::from_str("2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt").unwrap().assume_checked();
@@ -1587,7 +1585,7 @@ impl Wallet {
     ///     builder
     ///         .add_recipient(to_address.script_pubkey(), Amount::from_sat(50_000))
     ///         .enable_rbf();
-    ///     builder.finish_with_aux_rand(&mut thread_rng())?
+    ///     builder.finish()?
     /// };
     /// let _ = wallet.sign(&mut psbt, SignOptions::default())?;
     /// let tx = psbt.clone().extract_tx().expect("tx");
@@ -1596,7 +1594,7 @@ impl Wallet {
     ///     let mut builder = wallet.build_fee_bump(tx.compute_txid())?;
     ///     builder
     ///         .fee_rate(FeeRate::from_sat_per_vb(5).expect("valid feerate"));
-    ///     builder.finish_with_aux_rand(&mut thread_rng())?
+    ///     builder.finish()?
     /// };
     ///
     /// let _ = wallet.sign(&mut psbt, SignOptions::default())?;
@@ -1756,14 +1754,13 @@ impl Wallet {
     /// # use bdk_wallet::*;
     /// # use bdk_wallet::wallet::ChangeSet;
     /// # use bdk_wallet::wallet::error::CreateTxError;
-    /// # use rand::thread_rng;
     /// # let descriptor = "wpkh(tpubD6NzVbkrYhZ4Xferm7Pz4VnjdcDPFyjVu5K4iZXQ4pVN8Cks4pHVowTBXBKRhX64pkRyJZJN5xAKj4UDNnLPb5p2sSKXhewoYx5GbTdUFWq/*)";
     /// # let mut wallet = doctest_wallet!();
     /// # let to_address = Address::from_str("2N4eQYCbKUHCCTUjBJeHcJp9ok6J2GZsTDt").unwrap().assume_checked();
     /// let mut psbt = {
     ///     let mut builder = wallet.build_tx();
     ///     builder.add_recipient(to_address.script_pubkey(), Amount::from_sat(50_000));
-    ///     builder.finish_with_aux_rand(&mut thread_rng())?
+    ///     builder.finish()?
     /// };
     /// let finalized = wallet.sign(&mut psbt, SignOptions::default())?;
     /// assert!(finalized, "we should have signed all the inputs");
@@ -1808,6 +1805,7 @@ impl Wallet {
         {
             signer.sign_transaction(psbt, &sign_options, &self.secp)?;
         }
+
         // attempt to finalize
         if sign_options.try_finalize {
             self.finalize_psbt(psbt, sign_options)
