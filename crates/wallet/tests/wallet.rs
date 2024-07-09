@@ -4079,7 +4079,7 @@ fn test_tx_cancellation() {
         .unsigned_tx
         .output
         .iter()
-        .find_map(|txout| wallet.derivation_of_spk(&txout.script_pubkey))
+        .find_map(|txout| wallet.derivation_of_spk(txout.script_pubkey.clone()))
         .unwrap();
     assert_eq!(change_derivation_1, (KeychainKind::Internal, 0));
 
@@ -4089,7 +4089,7 @@ fn test_tx_cancellation() {
         .unsigned_tx
         .output
         .iter()
-        .find_map(|txout| wallet.derivation_of_spk(&txout.script_pubkey))
+        .find_map(|txout| wallet.derivation_of_spk(txout.script_pubkey.clone()))
         .unwrap();
     assert_eq!(change_derivation_2, (KeychainKind::Internal, 1));
 
@@ -4100,7 +4100,7 @@ fn test_tx_cancellation() {
         .unsigned_tx
         .output
         .iter()
-        .find_map(|txout| wallet.derivation_of_spk(&txout.script_pubkey))
+        .find_map(|txout| wallet.derivation_of_spk(txout.script_pubkey.clone()))
         .unwrap();
     assert_eq!(change_derivation_3, (KeychainKind::Internal, 0));
 
@@ -4109,7 +4109,7 @@ fn test_tx_cancellation() {
         .unsigned_tx
         .output
         .iter()
-        .find_map(|txout| wallet.derivation_of_spk(&txout.script_pubkey))
+        .find_map(|txout| wallet.derivation_of_spk(txout.script_pubkey.clone()))
         .unwrap();
     assert_eq!(change_derivation_3, (KeychainKind::Internal, 2));
 
@@ -4120,7 +4120,7 @@ fn test_tx_cancellation() {
         .unsigned_tx
         .output
         .iter()
-        .find_map(|txout| wallet.derivation_of_spk(&txout.script_pubkey))
+        .find_map(|txout| wallet.derivation_of_spk(txout.script_pubkey.clone()))
         .unwrap();
     assert_eq!(change_derivation_4, (KeychainKind::Internal, 2));
 }
